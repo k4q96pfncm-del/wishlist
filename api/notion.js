@@ -1,21 +1,28 @@
 // api/notion.js
-const { Client } = require('@notionhq/client');
+const { Client } = require('@notionhq/client'); // 중괄호 { } 가 반드시 있어야 합니다!
 
-const notion = new Client({ auth: process.env.NOTION_KEY });
+const notion = new Client({
+  auth: process.env.NOTION_KEY,
+});
 
 export default async function handler(req, res) {
   try {
     const databaseId = process.env.NOTION_DB_ID;
     
-    // 노션 데이터베이스 쿼리
+    // 데이터베이스 목록 가져오기
     const response = await notion.databases.query({
       database_id: databaseId,
-      // 필요한 경우 여기에 정렬(sorts)이나 필터(filter) 추가 가능
+      sorts: [
+        {
+          property: 'item', // 정렬 기준 (필요하면 수정)
+          direction: 'ascending',
+        },
+      ],
     });
 
     res.status(200).json({ results: response.results });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch data' });
+    console.error(error); // Vercel 로그에 에러를 자세히 남김
+    res.status(500).json({ error: 'Failed to fetch data', details: error.message });
   }
 }
